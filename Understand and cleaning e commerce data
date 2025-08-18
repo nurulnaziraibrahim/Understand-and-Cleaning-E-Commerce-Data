@@ -1,0 +1,110 @@
+--1. Understand-and-Cleaning-E-Commerce-Data
+SELECT * FROM data LIMIT 11;
+
+--2. Rename the column as the column header name as C1, C2,C3,etc.
+ALTER TABLE data RENAME COLUMN c1 TO InvoiceNo;
+ALTER TABLE data RENAME COLUMN c2 TO StockCode;
+ALTER TABLE data RENAME COLUMN c3 TO Description;
+ALTER TABLE data RENAME COLUMN c4 TO Quantity;
+ALTER TABLE data RENAME COLUMN c5 TO InvoiceDate;
+ALTER TABLE data RENAME COLUMN c6 TO UnitPrice;
+ALTER TABLE data RENAME COLUMN c7 TO CustomerID;
+ALTER TABLE data RENAME COLUMN c8 TO Country;
+
+--3. Delete all rows where any column contains the column header name
+DELETE FROM data
+WHERE InvoiceNo = 'InvoiceNo'
+   OR StockCode = 'StockCode'
+   OR Description = 'Description'
+   OR Quantity = 'Quantity'
+   OR InvoiceDate = 'InvoiceDate'
+   OR UnitPrice = 'UnitPrice'
+   OR CustomerID = 'CustomerID'
+   OR Country = 'Country';
+
+--4. Use Count (*) function to check how many row the data has – Contain 541,909 rows.
+SELECT COUNT(*) FROM data;
+
+--5. Check for customer missing value for all columns with count(*) function. 
+SELECT
+    COUNT(*) AS total_rows,
+    SUM(CASE WHEN InvoiceNo IS NULL OR InvoiceNo = '' THEN 1 ELSE 0 END) AS missing_invoice_no,
+    SUM(CASE WHEN StockCode IS NULL OR StockCode = '' THEN 1 ELSE 0 END) AS missing_stock_code,
+    SUM(CASE WHEN Description IS NULL OR Description = '' THEN 1 ELSE 0 END) AS missing_description,
+    SUM(CASE WHEN Quantity IS NULL THEN 1 ELSE 0 END) AS missing_quantity,
+    SUM(CASE WHEN InvoiceDate IS NULL OR InvoiceDate = '' THEN 1 ELSE 0 END) AS missing_invoice_date,
+    SUM(CASE WHEN UnitPrice IS NULL THEN 1 ELSE 0 END) AS missing_unit_price,
+    SUM(CASE WHEN CustomerID IS NULL OR CustomerID = '' THEN 1 ELSE 0 END) AS missing_customer_id,
+    SUM(CASE WHEN Country IS NULL OR Country = '' THEN 1 ELSE 0 END) AS missing_country
+FROM data;
+
+--6. Substitute customer missing value with NULL.
+UPDATE data SET CustomerID = NULL WHERE CustomerID = '';
+UPDATE data SET StockCode  = NULL WHERE StockCode  = '';
+UPDATE data SET InvoiceNo  = NULL WHERE InvoiceNo  = '';
+UPDATE data SET Description= NULL WHERE Description= '';
+UPDATE data SET Quantity   = NULL WHERE Quantity   = '';
+UPDATE data SET InvoiceDate= NULL WHERE InvoiceDate= '';
+UPDATE data SET Country    = NULL WHERE Country    = '';
+UPDATE data SET Unitprice = NULL WHERE Unitprice ='';
+
+--7. Recheck to understand if there are still  missing value in the column
+SELECT
+    SUM(CASE WHEN InvoiceNo   IS NULL THEN 1 ELSE 0 END) AS Null_InvoiceNo,
+    SUM(CASE WHEN StockCode   IS NULL THEN 1 ELSE 0 END) AS Null_StockCode,
+    SUM(CASE WHEN Description IS NULL THEN 1 ELSE 0 END) AS Null_Description,
+    SUM(CASE WHEN Quantity    IS NULL THEN 1 ELSE 0 END) AS Null_Quantity,
+    SUM(CASE WHEN InvoiceDate IS NULL THEN 1 ELSE 0 END) AS Null_InvoiceDate,
+    SUM(CASE WHEN UnitPrice   IS NULL THEN 1 ELSE 0 END) AS Null_UnitPrice,
+    SUM(CASE WHEN CustomerID  IS NULL THEN 1 ELSE 0 END) AS Null_CustomerID,
+    SUM(CASE WHEN Country     IS NULL THEN 1 ELSE 0 END) AS Null_Country
+FROM data;
+
+--8. Check for negative or 0 quantities for related columns (Quantity,  Unit Price, CustomerID).
+SELECT
+    SUM(CASE WHEN Quantity <= 0 THEN 1 ELSE 0 END) AS qty_zero_or_negative,
+    SUM(CASE WHEN UnitPrice <= 0 THEN 1 ELSE 0 END) AS price_zero_or_negative,
+    SUM(CASE WHEN CustomerID <= 0 THEN 1 ELSE 0 END) AS customerid_zero_or_negative
+
+FROM data;
+
+--9. Use Trim function () to remove any extra spaces before or after the text. 
+UPDATE data
+SET InvoiceNo = TRIM(InvoiceNo),
+    StockCode = TRIM(StockCode),
+    Description = TRIM(Description),
+    Quantity = TRIM(Quantity),
+    InvoiceDate = TRIM(InvoiceDate),
+    UnitPrice = TRIM (UnitPrice),
+    CustomerID = TRIM (CustomerID),
+    Country = TRIM(Country);
+
+--10. Use Distinct function to remove duplicates information from the dataset.
+CREATE TABLE data_clean1 AS
+Select Distinct *
+From data;
+
+--11. Re-check the data to ensure duplicates values are removed
+SELECT
+    (SELECT COUNT (*) FROM data) AS total_before,
+    (SELECT COUNT (*) FROM data_clean1) as TOTAL_AFTER;
+
+--12. Use Distinct function for column that have unvaluable information such as 0 and negative values. 
+CREATE TABLE data_clean3 AS
+SELECT DISTINCT *
+FROM data_clean1
+WHERE Quantity   > 0
+  AND UnitPrice  > 0
+  AND CustomerID > 0;
+
+--13. Re-check the data to ensure the column that contain 0 and negative values are removed. 
+SELECT
+    (SELECT COUNT (*) FROM data_clean1) AS total_before,
+    (SELECT COUNT (*) FROM data_clean3) as TOTAL_AFTER;
+
+--14. Check the date format in invoice date column to ensure proper date format
+
+
+
+
+
